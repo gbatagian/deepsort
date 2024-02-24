@@ -7,7 +7,7 @@ import (
 
 func TestDeepSort(t *testing.T) {
 
-	rawValues := [][]interface{}{
+	rawValues := [][]any{
 		{1, .2, false, "b"},
 		{1, .2, false, "a"},
 		{1, .1, false, "h"},
@@ -21,7 +21,7 @@ func TestDeepSort(t *testing.T) {
 
 	rawValues = DeepSort(rawValues, []int{0, 2, 1, 3})
 
-	expectedSortedRawValues := [][]interface{}{
+	expectedSortedRawValues := [][]any{
 		{1, .2, true, ""},
 		{1, .1, false, "c"},
 		{1, .1, false, "h"},
@@ -45,7 +45,7 @@ func TestDeepSort(t *testing.T) {
 
 func TestDeepSortReverse(t *testing.T) {
 
-	rawValues := [][]interface{}{
+	rawValues := [][]any{
 		{1, .2, false, "b"},
 		{1, .2, false, "a"},
 		{1, .1, false, "h"},
@@ -59,7 +59,7 @@ func TestDeepSortReverse(t *testing.T) {
 
 	rawValues = DeepSort(rawValues, []int{0, -2, 1, -3})
 
-	expectedSortedRawValues := [][]interface{}{
+	expectedSortedRawValues := [][]any{
 		{1, .1, false, "h"},
 		{1, .1, false, "c"},
 		{1, .2, false, "g"},
@@ -83,7 +83,7 @@ func TestDeepSortReverse(t *testing.T) {
 
 func TestDeepSortReverseInZeroIndexStart(t *testing.T) {
 
-	rawValues := [][]interface{}{
+	rawValues := [][]any{
 		{1, .2, false, "b"},
 		{1, .2, false, "a"},
 		{1, .1, false, "h"},
@@ -97,7 +97,7 @@ func TestDeepSortReverseInZeroIndexStart(t *testing.T) {
 
 	rawValues = DeepSort(rawValues, []float64{math.Copysign(0, -1), 3})
 
-	expectedSortedRawValues := [][]interface{}{
+	expectedSortedRawValues := [][]any{
 		{2, .1, false, "d"},
 		{2, .1, false, "e"},
 		{2, .1, true, "f"},
@@ -121,7 +121,7 @@ func TestDeepSortReverseInZeroIndexStart(t *testing.T) {
 
 func TestDeepSortReverseInZeroIndexMidle(t *testing.T) {
 
-	rawValues := [][]interface{}{
+	rawValues := [][]any{
 		{1, .2, false, "b"},
 		{1, .2, false, "a"},
 		{1, .1, false, "h"},
@@ -135,7 +135,7 @@ func TestDeepSortReverseInZeroIndexMidle(t *testing.T) {
 
 	rawValues = DeepSort(rawValues, []float64{2, math.Copysign(0, -1), 3})
 
-	expectedSortedRawValues := [][]interface{}{
+	expectedSortedRawValues := [][]any{
 		{2, .1, true, "f"},
 		{1, .2, true, ""},
 		{2, .1, false, "d"},

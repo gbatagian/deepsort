@@ -3,7 +3,7 @@
 The `deepsort` package provides the `DeepSort` function which allows to sort a slice of slices based on the values in multiple index positions in the nested slices. For example, a slice of slices containing the following data:
 
 ```go
-[][]interface{}{
+[][]any{
     {2, "a"},
     {1, "a"},
     {3, "a"},
@@ -16,7 +16,7 @@ The `deepsort` package provides the `DeepSort` function which allows to sort a s
 if sorted based on the values firstly in the index position `0` and then in the index position `1`, will have the following format after the sort operation:
 
 ```go
-[][]interface{}{
+[][]any{
     {1, "a"},
     {1, "b"},
     {2, "a"},
@@ -29,7 +29,7 @@ if sorted based on the values firstly in the index position `0` and then in the 
 The `DeepSort` function can sort in `ascending` and `descening` order, and the order condition can apply in each index position seperately, e.g. in the above example, if the slice of slices is sorted in `ascending` order in the index position `0` and in `descening` order in index position `1`, will eventually have the following format:
 
 ```go
-[][]interface{}{
+[][]any{
     {1, "b"},
     {1, "a"},
     {2, "b"},
@@ -58,7 +58,7 @@ import (
 
 func main() {
 
-	t := [][]interface{}{
+	t := [][]any{
 		{2, "a"},
 		{1, "a"},
 		{3, "a"},
@@ -96,7 +96,7 @@ import (
 
 func main() {
 
-	t := [][]interface{}{
+	t := [][]any{
 		{2, "a"},
 		{1, "a"},
 		{3, "a"},
@@ -135,7 +135,7 @@ import (
 
 func main() {
 
-	t := [][]interface{}{
+	t := [][]any{
 		{2, "a"},
 		{1, "a"},
 		{3, "a"},

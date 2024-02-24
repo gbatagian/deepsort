@@ -8,15 +8,15 @@ import (
 
 // Private struct which holds the sort operation related information
 type sortConstructor struct {
-	data                        *[][]interface{}
+	data                        *[][]any
 	sortKeysPositions           []int
 	reverse                     []bool
 	currentSortKeyPositionIndex int
 }
 
-// sortSliceWithMultipleIndexPositions sorts a slice of slices by mulpiple index positions, e.g. the slice:
+// sortSliceWithMultipleIndexPositions sorts a slice of slices by multiple index positions, e.g. the slice:
 
-//		[][]interface{}{
+//		[][]any{
 //			{2, "d"},
 //			{2, "c"},
 //			{2, "b"},
@@ -29,7 +29,7 @@ type sortConstructor struct {
 
 // if sorted by index positions 0, 1 to become:
 
-//		[][]interface{}{
+//		[][]any{
 //			{1, "a"},
 //			{1, "b"},
 //			{1, "c"},
@@ -45,8 +45,8 @@ type sortConstructor struct {
 // in the next specified index position. The recursion is executed until either an inequality result is achived or there are no
 // more available index position, which means that the 2 rows compared are equal and no swap should take place.
 
-// !! Note: for the sort operation to be succesfull, the data on the same index position in the nested slices of the slice of slices
-// !!       should be of the type, else the function will panic.
+// !! Note: for the sort operation to be successful, the data on the same index position in the nested slices of the slice of slices
+// !!       should be of the same type, else the function will panic.
 
 func (sc *sortConstructor) sortSliceWithMultipleIndexPositions(i, j int) bool {
 
@@ -203,7 +203,7 @@ func (sc *sortConstructor) sortSliceWithMultipleIndexPositions(i, j int) bool {
 
 }
 
-func DeepSort[kIdx int | float64](s [][]interface{}, k []kIdx) [][]interface{} {
+func DeepSort[kIdx int | float64](s [][]any, k []kIdx) [][]any {
 
 	keysPositions := make([]int, len(k))
 	sortInReverseOrderMap := make([]bool, len(k))

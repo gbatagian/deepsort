@@ -1,3 +1,3 @@
 module github.com/gbatagian/deepsort
 
-go 1.18
+go 1.22
