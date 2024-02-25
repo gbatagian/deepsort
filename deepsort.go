@@ -3,230 +3,115 @@ package deepsort
 import (
 	"fmt"
 	"math"
+	"math/cmplx"
+	"reflect"
 	"sort"
 )
 
-// Private struct which holds the sort operation related information
+// sortConstructor holds the information required for sorting a slice of slices by multiple index positions.
 type sortConstructor struct {
-	data                        *[][]any
-	sortKeysPositions           []int
-	reverse                     []bool
-	currentSortKeyPositionIndex int
+	data      *[][]any
+	positions []int
+	reverse   []bool
 }
 
-// sortSliceWithMultipleIndexPositions sorts a slice of slices by multiple index positions, e.g. the slice:
+// sortSliceByPositions sorts a slice of slices based on the values at multiple index positions.
+//
+// Example:
+// If sorting by index positions 0 and 1, an input slice of slices like this:
+//
+//	[][]any{
+//		{2, "d"},
+//		{2, "c"},
+//		{2, "b"},
+//		{2, "a"},
+//		{1, "d"},
+//		{1, "c"},
+//		{1, "b"},
+//		{1, "a"},
+//	}
+//
+// Would become:
+//
+//	[][]any{
+//		{1, "a"},
+//		{1, "b"},
+//		{1, "c"},
+//		{1, "d"},
+//		{2, "a"},
+//		{2, "b"},
+//		{2, "c"},
+//		{2, "d"},
+//	}
+//
+// Note:
+// For the sort operation to succeed, the data at the same index position in the nested slices
+// of the slice of slices must be of the same type. Otherwise, the function will panic.
+func (sc *sortConstructor) sortSliceByPositions(i, j int) bool {
 
-//		[][]any{
-//			{2, "d"},
-//			{2, "c"},
-//			{2, "b"},
-//			{2, "a"},
-//			{1, "d"},
-//			{1, "c"},
-//			{1, "b"},
-//			{1, "a"},
-//		}
-
-// if sorted by index positions 0, 1 to become:
-
-//		[][]any{
-//			{1, "a"},
-//			{1, "b"},
-//			{1, "c"},
-//			{1, "d"},
-//			{2, "a"},
-//			{2, "b"},
-//			{2, "c"},
-//			{2, "d"},
-//		}
-
-// sortSliceWithMultipleIndexPositions executes the sort operation by starting comparing the rows based on the first specified
-// index position, and if 2 rows are equal based on the current index, it does a recursive call and applied the sort operation
-// in the next specified index position. The recursion is executed until either an inequality result is achived or there are no
-// more available index position, which means that the 2 rows compared are equal and no swap should take place.
-
-// !! Note: for the sort operation to be successful, the data on the same index position in the nested slices of the slice of slices
-// !!       should be of the same type, else the function will panic.
-
-func (sc *sortConstructor) sortSliceWithMultipleIndexPositions(i, j int) bool {
-
-	if sc.currentSortKeyPositionIndex > len(sc.sortKeysPositions)-1 {
-		// This if condition is to end the recursive calls.
-		// To end up in here it means that two rows are equal based on the checks in all the specified key index positions
-		sc.currentSortKeyPositionIndex = 0 // renormilise sort key position index (to perform a fresh check in the next rows)
-		return true
+	XOR := func(a bool, b bool) bool {
+		return (a || b) && !(a && b)
 	}
 
-	idx := sc.sortKeysPositions[sc.currentSortKeyPositionIndex]
-	var con bool
+	for posIdx, pos := range sc.positions {
+		v1 := reflect.ValueOf((*sc.data)[i][pos])
+		v2 := reflect.ValueOf((*sc.data)[j][pos])
 
-	data := *sc.data
-	switch v1 := data[i][idx].(type) {
-	case int:
-		v2, ok := data[j][idx].(int)
-		if !ok {
-			panic(fmt.Sprintf("Can not compare values %v and %v in index position %d in nested slices %d and %d", v1, data[j][idx], idx, i+1, j+1))
+		if v1.Type() != v2.Type() {
+			panic(
+				"Values a the same index position must be of the same type. " +
+					fmt.Sprintf("\nRow: %v Position: %v  Value: %v Type: %T", i, pos, v1, (*sc.data)[i][pos]) +
+					fmt.Sprintf("\nRow: %v Position: %v  Value: %v Type: %T", j, pos, v2, (*sc.data)[j][pos]),
+			)
 		}
-		if v1 < v2 {
-			con = true
-		} else if v1 > v2 {
-			con = false
-		} else {
-			// rows are equal based on the current key index, so evaluate inequality condition in the next key index
-			sc.currentSortKeyPositionIndex += 1
-			return sc.sortSliceWithMultipleIndexPositions(i, j)
+
+		if v1.Interface() == v2.Interface() {
+			continue
 		}
-	case int8:
-		v2, ok := data[j][idx].(int8)
-		if !ok {
-			panic(fmt.Sprintf("Can not compare values %v and %v in index position %d in nested slices %d and %d", v1, data[j][idx], idx, i+1, j+1))
+
+		switch v1.Kind() {
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			return XOR(v1.Int() < v2.Int(), sc.reverse[posIdx])
+		case reflect.Float32, reflect.Float64:
+			return XOR(v1.Float() < v2.Float(), sc.reverse[posIdx])
+		case reflect.Complex64, reflect.Complex128:
+			return XOR(cmplx.Abs(v1.Complex()) < cmplx.Abs(v2.Complex()), sc.reverse[posIdx])
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			return XOR(v1.Uint() < v2.Uint(), sc.reverse[posIdx])
+		case reflect.String:
+			return XOR(v1.String() < v2.String(), sc.reverse[posIdx])
+		case reflect.Bool:
+			return XOR(!v1.Bool(), sc.reverse[posIdx])
 		}
-		if v1 < v2 {
-			con = true
-		} else if v1 > v2 {
-			con = false
-		} else {
-			// rows are equal based on the current key index, so evaluate inequality condition in the next key index
-			sc.currentSortKeyPositionIndex += 1
-			return sc.sortSliceWithMultipleIndexPositions(i, j)
-		}
-	case int16:
-		v2, ok := data[j][idx].(int16)
-		if !ok {
-			panic(fmt.Sprintf("Can not compare values %v and %v in index position %d in nested slices %d and %d", v1, data[j][idx], idx, i+1, j+1))
-		}
-		if v1 < v2 {
-			con = true
-		} else if v1 > v2 {
-			con = false
-		} else {
-			// rows are equal based on the current key index, so evaluate inequality condition in the next key index
-			sc.currentSortKeyPositionIndex += 1
-			return sc.sortSliceWithMultipleIndexPositions(i, j)
-		}
-	case int32:
-		v2, ok := data[j][idx].(int32)
-		if !ok {
-			panic(fmt.Sprintf("Can not compare values %v and %v in index position %d in nested slices %d and %d", v1, data[j][idx], idx, i+1, j+1))
-		}
-		if v1 < v2 {
-			con = true
-		} else if v1 > v2 {
-			con = false
-		} else {
-			// rows are equal based on the current key index, so evaluate inequality condition in the next key index
-			sc.currentSortKeyPositionIndex += 1
-			return sc.sortSliceWithMultipleIndexPositions(i, j)
-		}
-	case int64:
-		v2, ok := data[j][idx].(int64)
-		if !ok {
-			panic(fmt.Sprintf("Can not compare values %v and %v in index position %d in nested slices %d and %d", v1, data[j][idx], idx, i+1, j+1))
-		}
-		if v1 < v2 {
-			con = true
-		} else if v1 > v2 {
-			con = false
-		} else {
-			// rows are equal based on the current key index, so evaluate inequality condition in the next key index
-			sc.currentSortKeyPositionIndex += 1
-			return sc.sortSliceWithMultipleIndexPositions(i, j)
-		}
-	case float32:
-		v2, ok := data[j][idx].(float32)
-		if !ok {
-			panic(fmt.Sprintf("Can not compare values %v and %v in index position %d in nested slices %d and %d", v1, data[j][idx], idx, i+1, j+1))
-		}
-		if v1 < v2 {
-			con = true
-		} else if v1 > v2 {
-			con = false
-		} else {
-			// rows are equal based on the current key index, so evaluate inequality condition in the next key index
-			sc.currentSortKeyPositionIndex += 1
-			return sc.sortSliceWithMultipleIndexPositions(i, j)
-		}
-	case float64:
-		v2, ok := data[j][idx].(float64)
-		if !ok {
-			panic(fmt.Sprintf("Can not compare values %v and %v in index position %d in nested slices %d and %d", v1, data[j][idx], idx, i+1, j+1))
-		}
-		if v1 < v2 {
-			con = true
-		} else if v1 > v2 {
-			con = false
-		} else {
-			// rows are equal based on the current key index, so evaluate inequality condition in the next key index
-			sc.currentSortKeyPositionIndex += 1
-			return sc.sortSliceWithMultipleIndexPositions(i, j)
-		}
-	case string:
-		v2, ok := data[j][idx].(string)
-		if !ok {
-			panic(fmt.Sprintf("Can not compare values %v and %v in index position %d in nested slices %d and %d", v1, data[j][idx], idx, i+1, j+1))
-		}
-		if v1 < v2 {
-			con = true
-		} else if v1 > v2 {
-			con = false
-		} else {
-			// rows are equal based on the current key index, so evaluate inequality condition in the next key index
-			sc.currentSortKeyPositionIndex += 1
-			return sc.sortSliceWithMultipleIndexPositions(i, j)
-		}
-	case bool:
-		v2, ok := data[j][idx].(bool)
-		if !ok {
-			panic(fmt.Sprintf("Can not compare values %v and %v in index position %d in nested slices %d and %d", v1, data[j][idx], idx, i+1, j+1))
-		}
-		if v1 != v2 {
-			con = v1
-		} else {
-			// rows are equal based on the current key index, so evaluate inequality condition in the next key index
-			sc.currentSortKeyPositionIndex += 1
-			return sc.sortSliceWithMultipleIndexPositions(i, j)
-		}
-	default:
-		con = false
 	}
 
-	if sc.reverse[sc.currentSortKeyPositionIndex] {
-		con = !con
-	}
-
-	if sc.currentSortKeyPositionIndex > 0 {
-		// renormilise sort key position index after each inequality condition is resolved (to perform a fresh check in the next rows)
-		sc.currentSortKeyPositionIndex = 0
-	}
-
-	return con
-
+	return false
 }
 
-func DeepSort[kIdx int | float64](s [][]any, k []kIdx) [][]any {
+func DeepSort[idxPositions int | float64](slice *[][]any, positions []idxPositions) [][]any {
 
-	keysPositions := make([]int, len(k))
-	sortInReverseOrderMap := make([]bool, len(k))
-	for idx, keyIndex := range k {
-		if keyIndex == 0 {
-			zeroValue := float64(keyIndex)
-			if math.Signbit(zeroValue) {
-				sortInReverseOrderMap[idx] = true
+	sortPositions := make([]int, len(positions))
+	sortInReverse := make([]bool, len(positions))
+
+	for idx, idxPos := range positions {
+		if idxPos == 0 {
+			if math.Signbit(float64(idxPos)) {
+				sortInReverse[idx] = true
 			}
-			keysPositions[idx] = 0
-		} else if keyIndex < 0 {
-			keysPositions[idx] = -int(keyIndex)
-			sortInReverseOrderMap[idx] = true
+			sortPositions[idx] = 0
+		} else if idxPos < 0 {
+			sortPositions[idx] = -int(idxPos)
+			sortInReverse[idx] = true
 		} else {
-			keysPositions[idx] = int(keyIndex)
+			sortPositions[idx] = int(idxPos)
 		}
 	}
 
-	sc := sortConstructor{data: &s, sortKeysPositions: keysPositions, reverse: sortInReverseOrderMap}
+	sc := sortConstructor{data: slice, positions: sortPositions, reverse: sortInReverse}
 
 	sort.Slice(
 		*sc.data,
-		sc.sortSliceWithMultipleIndexPositions,
+		sc.sortSliceByPositions,
 	)
 
 	return *sc.data
