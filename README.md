@@ -154,7 +154,7 @@ func main() {
 ```
 Output:
 ```bash
-panic: Values a the same index position must be of the same type. 
+panic: Values at the same index position must be of the same type. 
 Row: 1 Position: 1  Value: false Type: string
 Row: 0 Position: 1  Value: true Type: bool
 

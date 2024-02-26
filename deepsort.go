@@ -59,7 +59,7 @@ func (sc *sortConstructor) sortSliceByPositions(i, j int) bool {
 
 		if v1.Type() != v2.Type() {
 			panic(
-				"Values a the same index position must be of the same type. " +
+				"Values at the same index position must be of the same type. " +
 					fmt.Sprintf("\nRow: %v Position: %v  Value: %v Type: %T", i, pos, v1, (*sc.data)[i][pos]) +
 					fmt.Sprintf("\nRow: %v Position: %v  Value: %v Type: %T", j, pos, v2, (*sc.data)[j][pos]),
 			)
@@ -88,7 +88,7 @@ func (sc *sortConstructor) sortSliceByPositions(i, j int) bool {
 	return false
 }
 
-func DeepSort[idxPositions int | float64](slice *[][]any, positions []idxPositions) [][]any {
+func DeepSort[idxPosition int | float64](slice *[][]any, positions []idxPosition) [][]any {
 
 	sortPositions := make([]int, len(positions))
 	sortInReverse := make([]bool, len(positions))
