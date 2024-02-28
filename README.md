@@ -30,7 +30,7 @@ func main() {
 	}
 
 	// Sort the data based on index positions 0 and 1 (ascending order)
-	data = deepsort.DeepSort(&data, []int{0, 1})
+	deepsort.DeepSort(&data, []int{0, 1})
 
 	// Output the sorted data
 	for _, row := range data {
@@ -103,7 +103,7 @@ func main() {
 	}
 
 	// Sort the data based on index positions 1 and 0 (ascending order)
-	data = deepsort.DeepSort(&data, []int{1, 0})
+	deepsort.DeepSort(&data, []int{1, 0})
 
 	// Output the sorted data
 	for _, row := range data {
@@ -144,7 +144,7 @@ func main() {
 	}
 
 	// Sort the data based on index positions 0 and 1 (ascending order)
-	data = deepsort.DeepSort(&data, []int{0, 1})
+	deepsort.DeepSort(&data, []int{0, 1})
 
 	// Output the sorted data
 	for _, row := range data {
