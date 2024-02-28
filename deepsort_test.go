@@ -19,7 +19,7 @@ func TestDeepSort(t *testing.T) {
 		{1, .2, true, ""},
 	}
 
-	rawValues = DeepSort(&rawValues, []int{0, 2, 1, 3})
+	DeepSort(&rawValues, []int{0, 2, 1, 3})
 
 	expectedSortedRawValues := [][]any{
 		{1, 0.1, false, "c"},
@@ -57,7 +57,7 @@ func TestDeepSortReverse(t *testing.T) {
 		{1, .2, true, ""},
 	}
 
-	rawValues = DeepSort(&rawValues, []int{0, -2, 1, -3})
+	DeepSort(&rawValues, []int{0, -2, 1, -3})
 
 	expectedSortedRawValues := [][]any{
 		{1, 0.2, true, ""},
@@ -95,7 +95,7 @@ func TestDeepSortReverseInZeroIndexStart(t *testing.T) {
 		{1, .2, true, ""},
 	}
 
-	rawValues = DeepSort(&rawValues, []float64{math.Copysign(0, -1), 3})
+	DeepSort(&rawValues, []float64{math.Copysign(0, -1), 3})
 
 	expectedSortedRawValues := [][]any{
 		{2, 0.1, false, "d"},
@@ -133,7 +133,7 @@ func TestDeepSortReverseInZeroIndexMiddle(t *testing.T) {
 		{1, .2, true, ""},
 	}
 
-	rawValues = DeepSort(&rawValues, []float64{2, math.Copysign(0, -1), 3})
+	DeepSort(&rawValues, []float64{2, math.Copysign(0, -1), 3})
 
 	expectedSortedRawValues := [][]any{
 		{2, 0.1, false, "d"},
@@ -167,7 +167,7 @@ func TestDeepSortComplexNumbers(t *testing.T) {
 		{2, true, 3 + 3i},
 	}
 
-	rawValues = DeepSort(&rawValues, []int{2, 0, 1})
+	DeepSort(&rawValues, []int{2, 0, 1})
 
 	expectedSortedRawValues := [][]any{
 		{1, false, (1 + 1i)},
@@ -197,7 +197,7 @@ func TestDeepSortComplexNumbersReverse(t *testing.T) {
 		{2, true, 3 + 3i},
 	}
 
-	rawValues = DeepSort(&rawValues, []float64{-2, math.Copysign(0, -1), -1})
+	DeepSort(&rawValues, []float64{-2, math.Copysign(0, -1), -1})
 
 	expectedSortedRawValues := [][]any{
 		{2, true, (3 + 3i)},
@@ -227,7 +227,7 @@ func TestDeepSortUnsignedIntegers(t *testing.T) {
 		{uint(2), true, 3 + 3i},
 	}
 
-	rawValues = DeepSort(&rawValues, []float64{math.Copysign(0, -1), 2})
+	DeepSort(&rawValues, []float64{math.Copysign(0, -1), 2})
 
 	expectedSortedRawValues := [][]any{
 		{uint(2), true, (1 + 1i)},
