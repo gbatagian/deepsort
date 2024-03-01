@@ -8,16 +8,9 @@ import (
 	"sort"
 )
 
-type sortable interface {
-	uint | uint8 | uint16 | uint32 | uint64 |
-		int | int8 | int16 | int32 | int64 |
-		float32 | float64 | complex64 | complex128 |
-		string | bool | any
-}
-
 // sortConstructor holds the information required for sorting a slice of slices by multiple index positions.
-type sortConstructor[s sortable] struct {
-	data      *[][]s
+type sortConstructor[T comparable] struct {
+	data      *[][]T
 	positions []int
 	reverse   []bool
 }
@@ -54,7 +47,7 @@ type sortConstructor[s sortable] struct {
 // Note:
 // For the sort operation to succeed, the data at the same index position in the nested slices
 // of the slice of slices must be of the same type. Otherwise, the function will panic.
-func (sc *sortConstructor[sortable]) sortSliceByPositions(i, j int) bool {
+func (sc *sortConstructor[comparable]) sortSliceByPositions(i, j int) bool {
 
 	XOR := func(a bool, b bool) bool {
 		return (a || b) && !(a && b)
@@ -95,7 +88,7 @@ func (sc *sortConstructor[sortable]) sortSliceByPositions(i, j int) bool {
 	return false
 }
 
-func DeepSort[idxPosition int | float64, s sortable](sliceOfSlices *[][]s, positions []idxPosition) {
+func DeepSort[I int | float64, T comparable](sliceOfSlices *[][]T, positions []I) {
 
 	sortPositions := make([]int, len(positions))
 	sortInReverse := make([]bool, len(positions))
@@ -114,7 +107,7 @@ func DeepSort[idxPosition int | float64, s sortable](sliceOfSlices *[][]s, posit
 		}
 	}
 
-	sc := sortConstructor[s]{data: sliceOfSlices, positions: sortPositions, reverse: sortInReverse}
+	sc := sortConstructor[T]{data: sliceOfSlices, positions: sortPositions, reverse: sortInReverse}
 
 	sort.Slice(
 		*sc.data,
