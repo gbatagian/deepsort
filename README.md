@@ -81,7 +81,9 @@ which would produce the following output based on the initial example:
 [1 b]
 ```
 
-`DeepSort` works with all numeric types, including integers, unsigned integers (uint), floats, and complex numbers, as well as strings and booleans. When sorting booleans, `false` is considered to be less than `true`. So, when sorting in ascending order, slices with `false` will come before those with `true`, e.g.:
+## Supported Data Types
+The slice of slices that is passed as input to the `DeepSort` function can be of any comparable data type, i.e. `[][]int`, `[][]float32`, `[][]string`, `[][]any` etc. As long as the elements at the same index position within the nested slices are of the same type, deepsort can handle them for sorting. `DeepSort` is also designed to be able to handle boolean values when comparing rows. When sorting based on booleans, `false` is considered to be less than `true`. So, when sorting in ascending order, slices with `false` will come before those with `true`, e.g.:
+
 ```go
 package main
 
