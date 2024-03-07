@@ -5,17 +5,52 @@ import (
 	"math"
 	"math/cmplx"
 	"reflect"
+	"regexp"
 	"sort"
+	"strconv"
 )
 
-// sortConstructor holds the information required for sorting a slice of slices by multiple index positions.
+type SortPositions interface {
+	int | float64 | string
+}
+
+// sortConstructor holds the information required for sorting a slice of slices by multiple positions.
 type sortConstructor[T comparable] struct {
 	data      *[][]T
-	positions []int
+	positions []any
 	reverse   []bool
 }
 
-// sortSliceByPositions sorts a slice of slices based on the values at multiple index positions.
+// getValuesFromPosition retrieves values for comparison based on the sort position
+// within the nested slices managed by sortConstructor. Positions can be:
+//   - Integers (int): referencing an index within the inner slices.
+//   - Two-element slices ([2]any):
+//     1. First element (int): index within the inner slices.
+//     2. Second element (string): field name to extract from a struct at that index.
+func (sc *sortConstructor[T]) getValuesFromPosition(pos any, i, j int) (reflect.Value, reflect.Value) {
+	switch typedPos := pos.(type) {
+	case int:
+		valueI := (*sc.data)[i][typedPos]
+		valueJ := (*sc.data)[j][typedPos]
+
+		return reflect.ValueOf(valueI), reflect.ValueOf(valueJ)
+	case [2]any:
+		pos, _ := typedPos[0].(int)
+		field, _ := typedPos[1].(string)
+
+		valueI := (*sc.data)[i][pos]
+		valueJ := (*sc.data)[j][pos]
+
+		fieldValueI := reflect.ValueOf(valueI).FieldByName(field).Interface().(T)
+		fieldValueJ := reflect.ValueOf(valueJ).FieldByName(field).Interface().(T)
+
+		return reflect.ValueOf(fieldValueI), reflect.ValueOf(fieldValueJ)
+	default:
+		panic(fmt.Errorf("unsupported type %T(%v) for sort position", typedPos, typedPos))
+	}
+}
+
+// sort sorts a slice of slices based on the values at multiple positions within the inner slices.
 //
 // Example:
 // If sorting by index positions 0 and 1, an input slice of slices like this:
@@ -46,64 +81,99 @@ type sortConstructor[T comparable] struct {
 //
 // Note:
 // For the sort operation to succeed, the data at the same index position in the nested slices
-// of the slice of slices must be of the same type. Otherwise, the function will panic.
-func (sc *sortConstructor[comparable]) sortSliceByPositions(i, j int) bool {
+// must be of the same type. Otherwise, the function will panic.
+func (sc *sortConstructor[T]) sort(i, j int) bool {
 
 	XOR := func(a bool, b bool) bool {
 		return (a || b) && !(a && b)
 	}
 
 	for posIdx, pos := range sc.positions {
-		v1 := reflect.ValueOf((*sc.data)[i][pos])
-		v2 := reflect.ValueOf((*sc.data)[j][pos])
+		valueI, valueJ := sc.getValuesFromPosition(pos, i, j)
 
-		if v1.Type() != v2.Type() {
+		if valueI.Type() != valueJ.Type() {
 			panic(
-				"Values at the same index position must be of the same type. " +
-					fmt.Sprintf("\nRow: %v Position: %v  Value: %v Type: %T", i, pos, v1, (*sc.data)[i][pos]) +
-					fmt.Sprintf("\nRow: %v Position: %v  Value: %v Type: %T", j, pos, v2, (*sc.data)[j][pos]),
+				fmt.Errorf(
+					"sorting error at position %v. Value `%v` and `%v` cannot be compared. Values at the same sort position must be of the same type",
+					pos, valueI, valueJ,
+				),
 			)
 		}
 
-		if v1.Interface() == v2.Interface() {
+		if valueI.Interface() == valueJ.Interface() {
 			continue
 		}
 
-		switch v1.Kind() {
+		switch valueI.Kind() {
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			return XOR(v1.Int() < v2.Int(), sc.reverse[posIdx])
+			return XOR(valueI.Int() < valueJ.Int(), sc.reverse[posIdx])
 		case reflect.Float32, reflect.Float64:
-			return XOR(v1.Float() < v2.Float(), sc.reverse[posIdx])
+			return XOR(valueI.Float() < valueJ.Float(), sc.reverse[posIdx])
 		case reflect.Complex64, reflect.Complex128:
-			return XOR(cmplx.Abs(v1.Complex()) < cmplx.Abs(v2.Complex()), sc.reverse[posIdx])
+			return XOR(cmplx.Abs(valueI.Complex()) < cmplx.Abs(valueJ.Complex()), sc.reverse[posIdx])
 		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-			return XOR(v1.Uint() < v2.Uint(), sc.reverse[posIdx])
+			return XOR(valueI.Uint() < valueJ.Uint(), sc.reverse[posIdx])
 		case reflect.String:
-			return XOR(v1.String() < v2.String(), sc.reverse[posIdx])
+			return XOR(valueI.String() < valueJ.String(), sc.reverse[posIdx])
 		case reflect.Bool:
-			return XOR(!v1.Bool(), sc.reverse[posIdx])
+			return XOR(!valueI.Bool(), sc.reverse[posIdx])
 		}
 	}
 
 	return false
 }
 
-func DeepSort[I int | float64, T comparable](sliceOfSlices *[][]T, positions []I) {
+// DeepSort sorts a slice of slices based on multiple specified positions or fields,
+// supporting index-based sorting, field-based sorting within structs, and ascending/descending order.
+//
+// Supported position types:
+//   - int, float64 (converted to int):
+//     -- Used as direct index positions for sorting.
+//     -- The sign (positive/negative) determines ascending/descending order.
+//   - string:
+//     -- Facilitates field-based sorting for values retrieved from structs.
+//     -- Uses the format "int:fieldName" (e.g., "1:Name" or "-2:Age").
+//     -- The int component specifies the index of the struct within the inner slice.
+//     -- The string component is the struct field that will be used for sorting.
+//     -- The sign on the int component controls ascending/descending order.
+func DeepSort[SortPositions, T comparable](sliceOfSlices *[][]T, positions []SortPositions) {
 
-	sortPositions := make([]int, len(positions))
+	sortPositions := make([]any, len(positions))
 	sortInReverse := make([]bool, len(positions))
 
-	for idx, idxPos := range positions {
-		if idxPos == 0 {
-			if math.Signbit(float64(idxPos)) {
+	for idx, position := range positions {
+		switch pos := interface{}(position); pos.(type) {
+		case float64:
+			typedPos, _ := pos.(float64)
+			sortPositions[idx] = int(typedPos)
+			if math.Signbit(typedPos) {
+				sortPositions[idx] = -int(typedPos)
 				sortInReverse[idx] = true
 			}
-			sortPositions[idx] = 0
-		} else if idxPos < 0 {
-			sortPositions[idx] = -int(idxPos)
-			sortInReverse[idx] = true
-		} else {
-			sortPositions[idx] = int(idxPos)
+		case int:
+			typedPos, _ := pos.(int)
+			sortPositions[idx] = typedPos
+			if typedPos < 0 {
+				sortPositions[idx] = -typedPos
+				sortInReverse[idx] = true
+			}
+		case string:
+			typedPos := pos.(string)
+			matchRegex, _ := regexp.Compile(`^(\-?[0-9]+):([a-zA-Z]+)$`)
+			matchGroups := matchRegex.FindStringSubmatch(typedPos)
+			if len(matchGroups) == 0 {
+				panic(fmt.Errorf("invalid field specifier format: \"%v\". Use int:fieldName (e.g. \"0:Name\", \"-1:Age\" etc.)", typedPos))
+			}
+
+			pos, _ := strconv.Atoi(matchGroups[1])
+			field := matchGroups[2]
+			if pos < 0 {
+				pos = -pos
+				sortInReverse[idx] = true
+			}
+			sortPositions[idx] = [2]any{pos, field}
+		default:
+			panic(fmt.Errorf("unsupported type %T(%v) provided for sort position. Supported types: int | float64 | string", position, position))
 		}
 	}
 
@@ -111,6 +181,6 @@ func DeepSort[I int | float64, T comparable](sliceOfSlices *[][]T, positions []I
 
 	sort.Slice(
 		*sc.data,
-		sc.sortSliceByPositions,
+		sc.sort,
 	)
 }
