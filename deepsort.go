@@ -6,7 +6,7 @@ import (
 	"math/cmplx"
 	"reflect"
 	"regexp"
-	"sort"
+	"slices"
 	"strconv"
 )
 
@@ -27,19 +27,19 @@ type sortConstructor[T comparable] struct {
 //   - Two-element slices ([2]any):
 //     1. First element (int): index within the inner slices.
 //     2. Second element (string): field name to extract from a struct at that index.
-func (sc *sortConstructor[T]) getValuesFromPosition(pos any, i, j int) (reflect.Value, reflect.Value) {
+func (sc *sortConstructor[T]) getValuesFromPosition(pos any, a, b []T) (reflect.Value, reflect.Value) {
 	switch typedPos := pos.(type) {
 	case int:
-		valueI := (*sc.data)[i][typedPos]
-		valueJ := (*sc.data)[j][typedPos]
+		valueI := a[typedPos]
+		valueJ := b[typedPos]
 
 		return reflect.ValueOf(valueI), reflect.ValueOf(valueJ)
 	case [2]any:
 		pos, _ := typedPos[0].(int)
 		field, _ := typedPos[1].(string)
 
-		valueI := (*sc.data)[i][pos]
-		valueJ := (*sc.data)[j][pos]
+		valueI := a[pos]
+		valueJ := b[pos]
 
 		fieldValueI := reflect.ValueOf(valueI).FieldByName(field).Interface().(T)
 		fieldValueJ := reflect.ValueOf(valueJ).FieldByName(field).Interface().(T)
@@ -82,14 +82,17 @@ func (sc *sortConstructor[T]) getValuesFromPosition(pos any, i, j int) (reflect.
 // Note:
 // For the sort operation to succeed, the data at the same index position in the nested slices
 // must be of the same type. Otherwise, the function will panic.
-func (sc *sortConstructor[T]) sort(i, j int) bool {
+func (sc *sortConstructor[T]) sort(a, b []T) int {
 
-	XOR := func(a bool, b bool) bool {
-		return (a || b) && !(a && b)
+	xorIntMap := func(b1 bool, b2 bool) int {
+		if (b1 || b2) && !(b1 && b2) {
+			return -1
+		}
+		return 1
 	}
 
 	for posIdx, pos := range sc.positions {
-		valueI, valueJ := sc.getValuesFromPosition(pos, i, j)
+		valueI, valueJ := sc.getValuesFromPosition(pos, a, b)
 
 		if valueI.Type() != valueJ.Type() {
 			panic(
@@ -106,21 +109,20 @@ func (sc *sortConstructor[T]) sort(i, j int) bool {
 
 		switch valueI.Kind() {
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			return XOR(valueI.Int() < valueJ.Int(), sc.reverse[posIdx])
+			return xorIntMap(valueI.Int() < valueJ.Int(), sc.reverse[posIdx])
 		case reflect.Float32, reflect.Float64:
-			return XOR(valueI.Float() < valueJ.Float(), sc.reverse[posIdx])
+			return xorIntMap(valueI.Float() < valueJ.Float(), sc.reverse[posIdx])
 		case reflect.Complex64, reflect.Complex128:
-			return XOR(cmplx.Abs(valueI.Complex()) < cmplx.Abs(valueJ.Complex()), sc.reverse[posIdx])
+			return xorIntMap(cmplx.Abs(valueI.Complex()) < cmplx.Abs(valueJ.Complex()), sc.reverse[posIdx])
 		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-			return XOR(valueI.Uint() < valueJ.Uint(), sc.reverse[posIdx])
+			return xorIntMap(valueI.Uint() < valueJ.Uint(), sc.reverse[posIdx])
 		case reflect.String:
-			return XOR(valueI.String() < valueJ.String(), sc.reverse[posIdx])
+			return xorIntMap(valueI.String() < valueJ.String(), sc.reverse[posIdx])
 		case reflect.Bool:
-			return XOR(!valueI.Bool(), sc.reverse[posIdx])
+			return xorIntMap(!valueI.Bool(), sc.reverse[posIdx])
 		}
 	}
-
-	return false
+	return 0
 }
 
 // DeepSort sorts a slice of slices based on multiple specified positions or fields,
@@ -162,7 +164,7 @@ func DeepSort[SortPositions, T comparable](sliceOfSlices *[][]T, positions []Sor
 			matchRegex, _ := regexp.Compile(`^(\-?[0-9]+):([a-zA-Z]+)$`)
 			matchGroups := matchRegex.FindStringSubmatch(typedPos)
 			if len(matchGroups) == 0 {
-				panic(fmt.Errorf("invalid field specifier format: \"%v\". Use int:fieldName (e.g. \"0:Name\", \"-1:Age\" etc.)", typedPos))
+				panic(fmt.Errorf("invalid field specifier format: \"%v\". Use int:string (e.g. \"0:Name\", \"-1:Age\" etc.)", typedPos))
 			}
 
 			pos, _ := strconv.Atoi(matchGroups[1])
@@ -179,7 +181,7 @@ func DeepSort[SortPositions, T comparable](sliceOfSlices *[][]T, positions []Sor
 
 	sc := sortConstructor[T]{data: sliceOfSlices, positions: sortPositions, reverse: sortInReverse}
 
-	sort.Slice(
+	slices.SortFunc(
 		*sc.data,
 		sc.sort,
 	)

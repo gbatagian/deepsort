@@ -9,16 +9,16 @@ import (
 type T interface{ comparable }
 
 func main() {
-	type sample struct {
-		Field any
-	}
 
 	values := [][]any{
-		{1, sample{"a"}},
-		{1, sample{"b"}},
+		{1, true},
+		{1, false},
+		{1, true},
 	}
 
-	deepsort.DeepSort(&values, []any{"-1:Field"})
+	deepsort.DeepSort(&values, []any{0})
 
-	fmt.Println(values)
+	for _, e := range values {
+		fmt.Println(e)
+	}
 }

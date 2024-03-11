@@ -386,3 +386,23 @@ func TestDeepSortStruct(t *testing.T) {
 
 	DeepSort(&values, []any{0, "1:Field"})
 }
+
+func TestNoSwapsOnEqualRows(t *testing.T) {
+	values := [][]any{
+		{1, true},
+		{1, false},
+		{1, true},
+	}
+
+	DeepSort(&values, []any{0})
+
+	sortedValues := values
+
+	for sIDx, s := range sortedValues {
+		for vIdx, v := range s {
+			if !(v == values[sIDx][vIdx]) {
+				t.Error("Unexpected data resulted after sort operation")
+			}
+		}
+	}
+}
