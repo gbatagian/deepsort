@@ -378,13 +378,118 @@ func TestDeepSortStruct(t *testing.T) {
 	}
 
 	values := [][]any{
-		{1, sample{"b"}},
-		{1, sample{"b"}},
+		{sample{"b"}},
+		{sample{"a"}},
+		{sample{"b"}},
+		{sample{"a"}},
+	}
+
+	DeepSort(&values, []any{"0:Field"})
+
+	sortedValues := [][]any{
+		{sample{"a"}},
+		{sample{"a"}},
+		{sample{"b"}},
+		{sample{"b"}},
+	}
+
+	for sIDx, s := range sortedValues {
+		for vIdx, v := range s {
+			if !(v == values[sIDx][vIdx]) {
+				t.Error("Unexpected data resulted after sort operation")
+			}
+		}
+	}
+}
+
+func TestDeepSortStructReverse(t *testing.T) {
+	type sample struct {
+		Field string
+	}
+
+	values := [][]any{
 		{2, sample{"a"}},
+		{2, sample{"b"}},
+		{1, sample{"a"}},
+		{1, sample{"b"}},
+	}
+
+	DeepSort(&values, []any{0, "-1:Field"})
+
+	sortedValues := [][]any{
+		{1, sample{"b"}},
+		{1, sample{"a"}},
+		{2, sample{"b"}},
 		{2, sample{"a"}},
 	}
 
-	DeepSort(&values, []any{0, "1:Field"})
+	for sIDx, s := range sortedValues {
+		for vIdx, v := range s {
+			if !(v == values[sIDx][vIdx]) {
+				t.Error("Unexpected data resulted after sort operation")
+			}
+		}
+	}
+}
+
+func TestDeepSortStructReverseZeroPosition(t *testing.T) {
+	type sample struct {
+		Field string
+	}
+
+	values := [][]any{
+		{sample{"a"}, 1},
+		{sample{"b"}, 1},
+		{sample{"a"}, 2},
+		{sample{"b"}, 2},
+	}
+
+	DeepSort(&values, []any{"-0:Field", -1})
+
+	sortedValues := [][]any{
+		{sample{"b"}, 2},
+		{sample{"b"}, 1},
+		{sample{"a"}, 2},
+		{sample{"a"}, 1},
+	}
+
+	for sIDx, s := range sortedValues {
+		for vIdx, v := range s {
+			if !(v == values[sIDx][vIdx]) {
+				t.Error("Unexpected data resulted after sort operation")
+			}
+		}
+	}
+}
+
+func TestDeepSortSliceOfSlicesOfStructsInput(t *testing.T) {
+	type sample struct {
+		Field string
+	}
+
+	values := [][]sample{
+		{sample{"a"}},
+		{sample{"b"}},
+		{sample{"a"}},
+		{sample{"b"}},
+	}
+
+	DeepSort(&values, []any{"0:Field"})
+
+	sortedValues := [][]sample{
+		{sample{"a"}},
+		{sample{"a"}},
+		{sample{"b"}},
+		{sample{"b"}},
+	}
+
+	for sIDx, s := range sortedValues {
+		for vIdx, v := range s {
+			if !(v == values[sIDx][vIdx]) {
+				t.Error("Unexpected data resulted after sort operation")
+			}
+		}
+	}
 }
 
 func TestNoSwapsOnEqualRows(t *testing.T) {
@@ -405,4 +510,136 @@ func TestNoSwapsOnEqualRows(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestDeepSortStructPositionFalseFormat1(t *testing.T) {
+	defer func() {
+		if err := recover(); err == nil {
+			t.Errorf("Did not panic.")
+		}
+	}()
+
+	type sample struct {
+		Field string
+	}
+
+	values := [][]any{
+		{sample{"a"}, 1},
+		{sample{"b"}, 1},
+		{sample{"a"}, 2},
+		{sample{"b"}, 2},
+	}
+
+	DeepSort(&values, []any{"--0:Field"})
+
+}
+
+func TestDeepSortStructPositionFalseFormat2(t *testing.T) {
+	defer func() {
+		if err := recover(); err == nil {
+			t.Errorf("Did not panic.")
+		}
+	}()
+
+	type sample struct {
+		Field string
+	}
+
+	values := [][]any{
+		{sample{"a"}, 1},
+		{sample{"b"}, 1},
+		{sample{"a"}, 2},
+		{sample{"b"}, 2},
+	}
+
+	DeepSort(&values, []any{"-0::Field"})
+
+}
+
+func TestDeepSortStructPositionFalseFormat3(t *testing.T) {
+	defer func() {
+		if err := recover(); err == nil {
+			t.Errorf("Did not panic.")
+		}
+	}()
+
+	type sample struct {
+		Field string
+	}
+
+	values := [][]any{
+		{sample{"a"}, 1},
+		{sample{"b"}, 1},
+		{sample{"a"}, 2},
+		{sample{"b"}, 2},
+	}
+
+	DeepSort(&values, []any{":Field"})
+
+}
+
+func TestDeepSortStructPositionFalseFormat4(t *testing.T) {
+	defer func() {
+		if err := recover(); err == nil {
+			t.Errorf("Did not panic.")
+		}
+	}()
+
+	type sample struct {
+		Field string
+	}
+
+	values := [][]any{
+		{sample{"a"}, 1},
+		{sample{"b"}, 1},
+		{sample{"a"}, 2},
+		{sample{"b"}, 2},
+	}
+
+	DeepSort(&values, []any{"0a:Field"})
+
+}
+
+func TestDeepSortStructPositionFalseFormat5(t *testing.T) {
+	defer func() {
+		if err := recover(); err == nil {
+			t.Errorf("Did not panic.")
+		}
+	}()
+
+	type sample struct {
+		Field string
+	}
+
+	values := [][]any{
+		{sample{"a"}, 1},
+		{sample{"b"}, 1},
+		{sample{"a"}, 2},
+		{sample{"b"}, 2},
+	}
+
+	DeepSort(&values, []any{" 0:Field"})
+
+}
+
+func TestDeepSortStructPositionFalseFormat6(t *testing.T) {
+	defer func() {
+		if err := recover(); err == nil {
+			t.Errorf("Did not panic.")
+		}
+	}()
+
+	type sample struct {
+		Field string
+	}
+
+	values := [][]any{
+		{sample{"a"}, 1},
+		{sample{"b"}, 1},
+		{sample{"a"}, 2},
+		{sample{"b"}, 2},
+	}
+
+	DeepSort(&values, []any{"0:Field "})
+
 }
