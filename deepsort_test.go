@@ -6,7 +6,7 @@ import (
 )
 
 func TestDeepSort(t *testing.T) {
-	rawValues := [][]any{
+	values := [][]any{
 		{1, .2, false, "b"},
 		{1, .2, false, "a"},
 		{1, .1, false, "h"},
@@ -18,9 +18,9 @@ func TestDeepSort(t *testing.T) {
 		{1, .2, true, ""},
 	}
 
-	DeepSort(&rawValues, []int{0, 2, 1, 3})
+	DeepSort(&values, []int{0, 2, 1, 3})
 
-	expectedSortedRawValues := [][]any{
+	sortedValues := [][]any{
 		{1, 0.1, false, "c"},
 		{1, 0.1, false, "h"},
 		{1, 0.2, false, "a"},
@@ -32,9 +32,9 @@ func TestDeepSort(t *testing.T) {
 		{2, 0.1, true, "f"},
 	}
 
-	for sIDx, s := range expectedSortedRawValues {
+	for sIDx, s := range sortedValues {
 		for vIdx, v := range s {
-			if !(v == rawValues[sIDx][vIdx]) {
+			if !(v == values[sIDx][vIdx]) {
 				t.Error("Unexpected data resulted after sort operation")
 			}
 		}
@@ -42,7 +42,7 @@ func TestDeepSort(t *testing.T) {
 }
 
 func TestDeepSortReverse(t *testing.T) {
-	rawValues := [][]any{
+	values := [][]any{
 		{1, .2, false, "b"},
 		{1, .2, false, "a"},
 		{1, .1, false, "h"},
@@ -54,9 +54,9 @@ func TestDeepSortReverse(t *testing.T) {
 		{1, .2, true, ""},
 	}
 
-	DeepSort(&rawValues, []int{0, -2, 1, -3})
+	DeepSort(&values, []int{0, -2, 1, -3})
 
-	expectedSortedRawValues := [][]any{
+	sortedValues := [][]any{
 		{1, 0.2, true, ""},
 		{1, 0.1, false, "h"},
 		{1, 0.1, false, "c"},
@@ -68,9 +68,9 @@ func TestDeepSortReverse(t *testing.T) {
 		{2, 0.1, false, "d"},
 	}
 
-	for sIDx, s := range expectedSortedRawValues {
+	for sIDx, s := range sortedValues {
 		for vIdx, v := range s {
-			if !(v == rawValues[sIDx][vIdx]) {
+			if !(v == values[sIDx][vIdx]) {
 				t.Error("Unexpected data resulted after sort operation")
 			}
 		}
@@ -78,7 +78,7 @@ func TestDeepSortReverse(t *testing.T) {
 }
 
 func TestDeepSortReverseInZeroIndexStart(t *testing.T) {
-	rawValues := [][]any{
+	values := [][]any{
 		{1, .2, false, "b"},
 		{1, .2, false, "a"},
 		{1, .1, false, "h"},
@@ -90,9 +90,9 @@ func TestDeepSortReverseInZeroIndexStart(t *testing.T) {
 		{1, .2, true, ""},
 	}
 
-	DeepSort(&rawValues, []float64{math.Copysign(0, -1), 3})
+	DeepSort(&values, []float64{math.Copysign(0, -1), 3})
 
-	expectedSortedRawValues := [][]any{
+	sortedValues := [][]any{
 		{2, 0.1, false, "d"},
 		{2, 0.1, false, "e"},
 		{2, 0.1, true, "f"},
@@ -104,9 +104,9 @@ func TestDeepSortReverseInZeroIndexStart(t *testing.T) {
 		{1, 0.1, false, "h"},
 	}
 
-	for sIDx, s := range expectedSortedRawValues {
+	for sIDx, s := range sortedValues {
 		for vIdx, v := range s {
-			if !(v == rawValues[sIDx][vIdx]) {
+			if !(v == values[sIDx][vIdx]) {
 				t.Error("Unexpected data resulted after sort operation")
 			}
 		}
@@ -115,7 +115,7 @@ func TestDeepSortReverseInZeroIndexStart(t *testing.T) {
 
 func TestDeepSortReverseInZeroIndexMiddle(t *testing.T) {
 
-	rawValues := [][]any{
+	values := [][]any{
 		{1, .2, false, "b"},
 		{1, .2, false, "a"},
 		{1, .1, false, "h"},
@@ -127,9 +127,9 @@ func TestDeepSortReverseInZeroIndexMiddle(t *testing.T) {
 		{1, .2, true, ""},
 	}
 
-	DeepSort(&rawValues, []float64{2, math.Copysign(0, -1), 3})
+	DeepSort(&values, []float64{2, math.Copysign(0, -1), 3})
 
-	expectedSortedRawValues := [][]any{
+	sortedValues := [][]any{
 		{2, 0.1, false, "d"},
 		{2, 0.1, false, "e"},
 		{1, 0.2, false, "a"},
@@ -141,9 +141,9 @@ func TestDeepSortReverseInZeroIndexMiddle(t *testing.T) {
 		{1, 0.2, true, ""},
 	}
 
-	for sIDx, s := range expectedSortedRawValues {
+	for sIDx, s := range sortedValues {
 		for vIdx, v := range s {
-			if !(v == rawValues[sIDx][vIdx]) {
+			if !(v == values[sIDx][vIdx]) {
 				t.Error("Unexpected data resulted after sort operation")
 			}
 		}
@@ -152,7 +152,7 @@ func TestDeepSortReverseInZeroIndexMiddle(t *testing.T) {
 }
 
 func TestDeepSortComplexNumbers(t *testing.T) {
-	rawValues := [][]any{
+	values := [][]any{
 		{1, false, 1 + 1i},
 		{1, false, 2 + 2i},
 		{1, false, 3 + 3i},
@@ -161,9 +161,9 @@ func TestDeepSortComplexNumbers(t *testing.T) {
 		{2, true, 3 + 3i},
 	}
 
-	DeepSort(&rawValues, []int{2, 0, 1})
+	DeepSort(&values, []int{2, 0, 1})
 
-	expectedSortedRawValues := [][]any{
+	sortedValues := [][]any{
 		{1, false, (1 + 1i)},
 		{2, true, (1 + 1i)},
 		{1, false, (2 + 2i)},
@@ -172,9 +172,9 @@ func TestDeepSortComplexNumbers(t *testing.T) {
 		{2, true, (3 + 3i)},
 	}
 
-	for sIDx, s := range expectedSortedRawValues {
+	for sIDx, s := range sortedValues {
 		for vIdx, v := range s {
-			if !(v == rawValues[sIDx][vIdx]) {
+			if !(v == values[sIDx][vIdx]) {
 				t.Error("Unexpected data resulted after sort operation")
 			}
 		}
@@ -182,7 +182,7 @@ func TestDeepSortComplexNumbers(t *testing.T) {
 }
 
 func TestDeepSortComplexNumbersReverse(t *testing.T) {
-	rawValues := [][]any{
+	values := [][]any{
 		{1, false, 1 + 1i},
 		{1, false, 2 + 2i},
 		{1, false, 3 + 3i},
@@ -191,9 +191,9 @@ func TestDeepSortComplexNumbersReverse(t *testing.T) {
 		{2, true, 3 + 3i},
 	}
 
-	DeepSort(&rawValues, []float64{-2, math.Copysign(0, -1), -1})
+	DeepSort(&values, []float64{-2, math.Copysign(0, -1), -1})
 
-	expectedSortedRawValues := [][]any{
+	sortedValues := [][]any{
 		{2, true, (3 + 3i)},
 		{1, false, (3 + 3i)},
 		{2, true, (2 + 2i)},
@@ -202,9 +202,9 @@ func TestDeepSortComplexNumbersReverse(t *testing.T) {
 		{1, false, (1 + 1i)},
 	}
 
-	for sIDx, s := range expectedSortedRawValues {
+	for sIDx, s := range sortedValues {
 		for vIdx, v := range s {
-			if !(v == rawValues[sIDx][vIdx]) {
+			if !(v == values[sIDx][vIdx]) {
 				t.Error("Unexpected data resulted after sort operation")
 			}
 		}
@@ -212,7 +212,7 @@ func TestDeepSortComplexNumbersReverse(t *testing.T) {
 }
 
 func TestDeepSortUnsignedIntegers(t *testing.T) {
-	rawValues := [][]any{
+	values := [][]any{
 		{uint(1), false, 1 + 1i},
 		{uint(1), false, 2 + 2i},
 		{uint(1), false, 3 + 3i},
@@ -221,9 +221,9 @@ func TestDeepSortUnsignedIntegers(t *testing.T) {
 		{uint(2), true, 3 + 3i},
 	}
 
-	DeepSort(&rawValues, []float64{math.Copysign(0, -1), 2})
+	DeepSort(&values, []float64{math.Copysign(0, -1), 2})
 
-	expectedSortedRawValues := [][]any{
+	sortedValues := [][]any{
 		{uint(2), true, (1 + 1i)},
 		{uint(2), true, (2 + 2i)},
 		{uint(2), true, (3 + 3i)},
@@ -232,9 +232,9 @@ func TestDeepSortUnsignedIntegers(t *testing.T) {
 		{uint(1), false, (3 + 3i)},
 	}
 
-	for sIDx, s := range expectedSortedRawValues {
+	for sIDx, s := range sortedValues {
 		for vIdx, v := range s {
-			if !(v == rawValues[sIDx][vIdx]) {
+			if !(v == values[sIDx][vIdx]) {
 				t.Error("Unexpected data resulted after sort operation")
 			}
 		}
@@ -248,32 +248,32 @@ func TestDeepSortValueOnTheSameIndexPositionNotSameType(t *testing.T) {
 		}
 	}()
 
-	rawValues := [][]any{
+	values := [][]any{
 		{1, false},
 		{1, "false"},
 	}
 
-	DeepSort(&rawValues, []int{1})
+	DeepSort(&values, []int{1})
 }
 
 func TestDeepSortInt(t *testing.T) {
-	rawValues := [][]int64{
+	values := [][]int64{
 		{10, 20, 30, 40},
 		{100, 200, 300, 400},
 		{1000, 2000, 3000, 4000},
 	}
 
-	DeepSort(&rawValues, []float64{math.Copysign(0, -1)})
+	DeepSort(&values, []float64{math.Copysign(0, -1)})
 
-	expectedSortedRawValues := [][]int64{
+	sortedValues := [][]int64{
 		{1000, 2000, 3000, 4000},
 		{100, 200, 300, 400},
 		{10, 20, 30, 40},
 	}
 
-	for sIDx, s := range expectedSortedRawValues {
+	for sIDx, s := range sortedValues {
 		for vIdx, v := range s {
-			if !(v == rawValues[sIDx][vIdx]) {
+			if !(v == values[sIDx][vIdx]) {
 				t.Error("Unexpected data resulted after sort operation")
 			}
 		}
@@ -281,7 +281,7 @@ func TestDeepSortInt(t *testing.T) {
 }
 
 func TestDeepSortString(t *testing.T) {
-	rawValues := [][]string{
+	values := [][]string{
 		{"apple", "d"},
 		{"banana", "c"},
 		{"cherry", "b"},
@@ -289,9 +289,9 @@ func TestDeepSortString(t *testing.T) {
 		{"elderberry", "e"},
 	}
 
-	DeepSort(&rawValues, []int{1})
+	DeepSort(&values, []int{1})
 
-	expectedSortedRawValues := [][]string{
+	sortedValues := [][]string{
 		{"orange", "a"},
 		{"cherry", "b"},
 		{"banana", "c"},
@@ -299,9 +299,9 @@ func TestDeepSortString(t *testing.T) {
 		{"elderberry", "e"},
 	}
 
-	for sIDx, s := range expectedSortedRawValues {
+	for sIDx, s := range sortedValues {
 		for vIdx, v := range s {
-			if !(v == rawValues[sIDx][vIdx]) {
+			if !(v == values[sIDx][vIdx]) {
 				t.Error("Unexpected data resulted after sort operation")
 			}
 		}
@@ -309,23 +309,23 @@ func TestDeepSortString(t *testing.T) {
 }
 
 func TestDeepSortComplex(t *testing.T) {
-	rawValues := [][]complex64{
+	values := [][]complex64{
 		{1 + 1i},
 		{2 + 2i},
 		{3 + 3i},
 	}
 
-	DeepSort(&rawValues, []float64{math.Copysign(0, -1)})
+	DeepSort(&values, []float64{math.Copysign(0, -1)})
 
-	expectedSortedRawValues := [][]complex64{
+	sortedValues := [][]complex64{
 		{3 + 3i},
 		{2 + 2i},
 		{1 + 1i},
 	}
 
-	for sIDx, s := range expectedSortedRawValues {
+	for sIDx, s := range sortedValues {
 		for vIdx, v := range s {
-			if !(v == rawValues[sIDx][vIdx]) {
+			if !(v == values[sIDx][vIdx]) {
 				t.Error("Unexpected data resulted after sort operation")
 			}
 		}
@@ -333,23 +333,23 @@ func TestDeepSortComplex(t *testing.T) {
 }
 
 func TestDeepSortFloat(t *testing.T) {
-	rawValues := [][]float64{
+	values := [][]float64{
 		{3.14159},
 		{1.61803},
 		{2.71828},
 	}
 
-	DeepSort(&rawValues, []int{0})
+	DeepSort(&values, []int{0})
 
-	expectedSortedRawValues := [][]float64{
+	sortedValues := [][]float64{
 		{1.61803},
 		{2.71828},
 		{3.14159},
 	}
 
-	for sIDx, s := range expectedSortedRawValues {
+	for sIDx, s := range sortedValues {
 		for vIdx, v := range s {
-			if !(v == rawValues[sIDx][vIdx]) {
+			if !(v == values[sIDx][vIdx]) {
 				t.Error("Unexpected data resulted after sort operation")
 			}
 		}
@@ -357,17 +357,289 @@ func TestDeepSortFloat(t *testing.T) {
 }
 
 func TestDeepSortEmpty(t *testing.T) {
-	rawValues := [][]any{}
+	values := [][]any{}
 
-	DeepSort(&rawValues, []int{0})
+	DeepSort(&values, []int{0})
 
-	expectedSortedRawValues := [][]any{}
+	sortedValues := [][]any{}
 
-	for sIDx, s := range expectedSortedRawValues {
+	for sIDx, s := range sortedValues {
 		for vIdx, v := range s {
-			if !(v == rawValues[sIDx][vIdx]) {
+			if !(v == values[sIDx][vIdx]) {
 				t.Error("Unexpected data resulted after sort operation")
 			}
 		}
 	}
+}
+
+func TestDeepSortStruct(t *testing.T) {
+	type sample struct {
+		Field string
+	}
+
+	values := [][]any{
+		{sample{"b"}},
+		{sample{"a"}},
+		{sample{"b"}},
+		{sample{"a"}},
+	}
+
+	DeepSort(&values, []any{"0:Field"})
+
+	sortedValues := [][]any{
+		{sample{"a"}},
+		{sample{"a"}},
+		{sample{"b"}},
+		{sample{"b"}},
+	}
+
+	for sIDx, s := range sortedValues {
+		for vIdx, v := range s {
+			if !(v == values[sIDx][vIdx]) {
+				t.Error("Unexpected data resulted after sort operation")
+			}
+		}
+	}
+}
+
+func TestDeepSortStructReverse(t *testing.T) {
+	type sample struct {
+		Field string
+	}
+
+	values := [][]any{
+		{2, sample{"a"}},
+		{2, sample{"b"}},
+		{1, sample{"a"}},
+		{1, sample{"b"}},
+	}
+
+	DeepSort(&values, []any{0, "-1:Field"})
+
+	sortedValues := [][]any{
+		{1, sample{"b"}},
+		{1, sample{"a"}},
+		{2, sample{"b"}},
+		{2, sample{"a"}},
+	}
+
+	for sIDx, s := range sortedValues {
+		for vIdx, v := range s {
+			if !(v == values[sIDx][vIdx]) {
+				t.Error("Unexpected data resulted after sort operation")
+			}
+		}
+	}
+}
+
+func TestDeepSortStructReverseZeroPosition(t *testing.T) {
+	type sample struct {
+		Field string
+	}
+
+	values := [][]any{
+		{sample{"a"}, 1},
+		{sample{"b"}, 1},
+		{sample{"a"}, 2},
+		{sample{"b"}, 2},
+	}
+
+	DeepSort(&values, []any{"-0:Field", -1})
+
+	sortedValues := [][]any{
+		{sample{"b"}, 2},
+		{sample{"b"}, 1},
+		{sample{"a"}, 2},
+		{sample{"a"}, 1},
+	}
+
+	for sIDx, s := range sortedValues {
+		for vIdx, v := range s {
+			if !(v == values[sIDx][vIdx]) {
+				t.Error("Unexpected data resulted after sort operation")
+			}
+		}
+	}
+}
+
+func TestDeepSortSliceOfSlicesOfStructsInput(t *testing.T) {
+	type sample struct {
+		Field string
+	}
+
+	values := [][]sample{
+		{sample{"a"}},
+		{sample{"b"}},
+		{sample{"a"}},
+		{sample{"b"}},
+	}
+
+	DeepSort(&values, []any{"0:Field"})
+
+	sortedValues := [][]sample{
+		{sample{"a"}},
+		{sample{"a"}},
+		{sample{"b"}},
+		{sample{"b"}},
+	}
+
+	for sIDx, s := range sortedValues {
+		for vIdx, v := range s {
+			if !(v == values[sIDx][vIdx]) {
+				t.Error("Unexpected data resulted after sort operation")
+			}
+		}
+	}
+}
+
+func TestNoSwapsOnEqualRows(t *testing.T) {
+	values := [][]any{
+		{1, true},
+		{1, false},
+		{1, true},
+	}
+
+	DeepSort(&values, []any{0})
+
+	sortedValues := values
+
+	for sIDx, s := range sortedValues {
+		for vIdx, v := range s {
+			if !(v == values[sIDx][vIdx]) {
+				t.Error("Unexpected data resulted after sort operation")
+			}
+		}
+	}
+}
+
+func TestDeepSortStructPositionFalseFormat1(t *testing.T) {
+	defer func() {
+		if err := recover(); err == nil {
+			t.Errorf("Did not panic.")
+		}
+	}()
+
+	type sample struct {
+		Field string
+	}
+
+	values := [][]any{
+		{sample{"a"}, 1},
+		{sample{"b"}, 1},
+		{sample{"a"}, 2},
+		{sample{"b"}, 2},
+	}
+
+	DeepSort(&values, []any{"--0:Field"})
+
+}
+
+func TestDeepSortStructPositionFalseFormat2(t *testing.T) {
+	defer func() {
+		if err := recover(); err == nil {
+			t.Errorf("Did not panic.")
+		}
+	}()
+
+	type sample struct {
+		Field string
+	}
+
+	values := [][]any{
+		{sample{"a"}, 1},
+		{sample{"b"}, 1},
+		{sample{"a"}, 2},
+		{sample{"b"}, 2},
+	}
+
+	DeepSort(&values, []any{"-0::Field"})
+
+}
+
+func TestDeepSortStructPositionFalseFormat3(t *testing.T) {
+	defer func() {
+		if err := recover(); err == nil {
+			t.Errorf("Did not panic.")
+		}
+	}()
+
+	type sample struct {
+		Field string
+	}
+
+	values := [][]any{
+		{sample{"a"}, 1},
+		{sample{"b"}, 1},
+		{sample{"a"}, 2},
+		{sample{"b"}, 2},
+	}
+
+	DeepSort(&values, []any{":Field"})
+
+}
+
+func TestDeepSortStructPositionFalseFormat4(t *testing.T) {
+	defer func() {
+		if err := recover(); err == nil {
+			t.Errorf("Did not panic.")
+		}
+	}()
+
+	type sample struct {
+		Field string
+	}
+
+	values := [][]any{
+		{sample{"a"}, 1},
+		{sample{"b"}, 1},
+		{sample{"a"}, 2},
+		{sample{"b"}, 2},
+	}
+
+	DeepSort(&values, []any{"0a:Field"})
+
+}
+
+func TestDeepSortStructPositionFalseFormat5(t *testing.T) {
+	defer func() {
+		if err := recover(); err == nil {
+			t.Errorf("Did not panic.")
+		}
+	}()
+
+	type sample struct {
+		Field string
+	}
+
+	values := [][]any{
+		{sample{"a"}, 1},
+		{sample{"b"}, 1},
+		{sample{"a"}, 2},
+		{sample{"b"}, 2},
+	}
+
+	DeepSort(&values, []any{" 0:Field"})
+
+}
+
+func TestDeepSortStructPositionFalseFormat6(t *testing.T) {
+	defer func() {
+		if err := recover(); err == nil {
+			t.Errorf("Did not panic.")
+		}
+	}()
+
+	type sample struct {
+		Field string
+	}
+
+	values := [][]any{
+		{sample{"a"}, 1},
+		{sample{"b"}, 1},
+		{sample{"a"}, 2},
+		{sample{"b"}, 2},
+	}
+
+	DeepSort(&values, []any{"0:Field "})
+
 }
